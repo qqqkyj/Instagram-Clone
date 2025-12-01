@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+    <title>회원가입</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title text-center mb-4">Instagram</h3>
+                    <p class="text-center text-muted mb-4">친구들의 사진과 동영상을 보려면 가입하세요.</p>
+
+                    <form th:action="@{/auth/signup}" th:object="${signUpRequest}" method="post">
+                        <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger">
+                            <p th:each="err : ${#fields.globalErrors()}" th:text="${err}"></p>
+                        </div>
+
+                        <div class="mb-3">
+                            <input type="email" th:field="*{email}" class="form-control"
+                                   placeholder="이메일"
+                                   th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'">
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}"
+                                 th:errors="*{email}"></div>
+                        </div>
+                        <div class="mb-3">
+                            <input type="text" th:field="*{name}" class="form-control"
+                                   placeholder="성명">
+                        </div>
+                        <div class="mb-3">
+                            <input type="text" th:field="*{username}" class="form-control"
+                                   placeholder="사용자명"
+                                   th:classappend="${#fields.hasErrors('username')} ? 'is-invalid'">
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('username')}"
+                                 th:errors="*{username}"></div>
+                        </div>
+                        <div class="mb-3">
+                            <input type="password" th:field="*{password}" class="form-control"
+                                   placeholder="비밀번호"
+                                   th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'">
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('password')}"
+                                 th:errors="*{password}"></div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">회원가입</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-body text-center">
+                    계정이 있으신가요? <a href="/auth/login">로그인</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
