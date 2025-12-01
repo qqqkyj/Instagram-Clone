@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+    <title>홈</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <!-- 로그인하지 않은 경우 -->
+    <div sec:authorize="!isAuthenticated()" class="text-center">
+        <h1>Instagram Clone</h1>
+        <p class="lead">친구들의 사진과 동영상을 보려면 가입하세요.</p>
+        <a href="/auth/signup" class="btn btn-primary btn-lg">회원가입</a>
+    </div>
+
+    <!-- 로그인한 경우 -->
+    <div sec:authorize="isAuthenticated()">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body text-center text-muted">
+                        <p>아직 게시물이 없습니다.</p>
+                        <p>팔로우한 사람들의 게시물이 여기에 표시됩니다.</p>
+                        <a href="/posts/new" class="btn btn-primary">첫 게시물 작성하기</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h6>환영합니다!</h6>
+                        <p class="text-muted mb-0">
+                            <span sec:authentication="name"></span>님
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
