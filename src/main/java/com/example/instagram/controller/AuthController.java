@@ -1,7 +1,7 @@
 package com.example.instagram.controller;
 
 import com.example.instagram.dto.request.SignUpRequest;
-import com.example.instagram.service.UserService;
+import com.example.instagram.service.UserServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
-    private final UserService userService;
+    private final UserServiceImpl userService;
 
     //사용자 데이터를 입력받도록 로그인용 빈종이 출력
     @GetMapping("/login")
@@ -37,6 +37,8 @@ public class AuthController {
         if(bindingResult.hasErrors()){
             return "auth/signup";
         }
+
+        userService.register(signUpRequest);
         return "redirect:/auth/login";
     }
 }
