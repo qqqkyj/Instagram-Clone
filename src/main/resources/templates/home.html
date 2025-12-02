@@ -19,14 +19,44 @@
     <div sec:authorize="isAuthenticated()">
         <div class="row">
             <div class="col-md-8">
-                <div class="card">
+                <!-- 게시물이 없는 경우 -->
+                <div th:if="${#lists.isEmpty(posts)}" class="card">
                     <div class="card-body text-center text-muted">
                         <p>아직 게시물이 없습니다.</p>
-                        <p>팔로우한 사람들의 게시물이 여기에 표시됩니다.</p>
                         <a href="/posts/new" class="btn btn-primary">첫 게시물 작성하기</a>
                     </div>
                 </div>
+
+                <!-- 게시물 목록 -->
+                <div th:each="post : ${posts}" class="card mb-3">
+                    <!-- 작성자 정보 -->
+                    <div class="card-header d-flex align-items-center bg-white">
+                        <!--                        <img th:src="${post.profileImageUrl != null ? post.profileImageUrl : '/images/default-profile.png'}"-->
+                        <!--                             class="rounded-circle me-2" width="32" height="32"-->
+                        <!--                             alt="프로필 이미지">-->
+                        <a th:href="@{'/users/' + ${post.username}}" class="fw-bold text-decoration-none text-dark">
+                            <span th:text="${post.username}">username</span>
+                        </a>
+                    </div>
+
+                    <!-- 게시물 내용 -->
+                    <div class="card-body">
+                        <p class="card-text" th:text="${post.content}">게시물 내용</p>
+                    </div>
+
+                    <!-- 하단 정보 -->
+                    <div class="card-footer bg-white">
+                        <small class="text-muted" th:text="${#temporals.format(post.createdAt, 'yyyy년 MM월 dd일')}">
+                            2024년 1월 1일
+                        </small>
+                        <a th:href="@{'/posts/' + ${post.id}}" class="btn btn-link btn-sm float-end">
+                            자세히 보기
+                        </a>
+                    </div>
+                </div>
             </div>
+
+            <!-- 사이드바 -->
             <div class="col-md-4">
                 <div class="card">
                     <div class="card-body">
