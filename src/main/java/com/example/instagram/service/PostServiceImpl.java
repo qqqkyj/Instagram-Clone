@@ -27,4 +27,16 @@ public class PostServiceImpl implements PostService {
         Post saved = postRepository.save(post);
         return PostResponse.from(saved);
     }
+
+    @Override
+    public Post findById(Long id){
+        Post post = postRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("post not found"));
+        return post;
+    }
+
+    @Override
+    public PostResponse getPostById(Long id) {
+        Post post = findById(id);
+        return PostResponse.from(post);
+    }
 }
