@@ -2,6 +2,7 @@ package com.example.instagram.service;
 
 import com.example.instagram.dto.request.CommentCreateRequest;
 import com.example.instagram.dto.response.CommentResponse;
+import com.example.instagram.dto.response.PostResponse;
 import com.example.instagram.entity.Comment;
 import com.example.instagram.entity.Post;
 import com.example.instagram.entity.User;
@@ -9,6 +10,8 @@ import com.example.instagram.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
@@ -18,6 +21,7 @@ public class CommentServiceImpl implements CommentService{
     private final PostService postService;
     private final UserService userService;
 
+    //댓글 생성
     @Transactional
     @Override
     public CommentResponse create(Long postId,
@@ -32,5 +36,14 @@ public class CommentServiceImpl implements CommentService{
                 .build();
         Comment saved = commentRepository.save(comment);
         return CommentResponse.from(saved);
+    }
+
+    //댓글 전체 조회
+    @Override
+    public List<CommentResponse> getAllCommentsByPostId(Long postId) {
+        return commentRepository.findAllByPostIdOrderByCreatedAtDesc(postId)
+                .stream()
+                .map(CommentResponse::from)
+                .toList();
     }
 }
