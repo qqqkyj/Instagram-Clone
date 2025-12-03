@@ -4,6 +4,7 @@ import com.example.instagram.dto.request.CommentCreateRequest;
 import com.example.instagram.dto.request.PostCreateRequest;
 import com.example.instagram.dto.response.PostResponse;
 import com.example.instagram.security.CustomUserDetails;
+import com.example.instagram.service.CommentService;
 import com.example.instagram.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 public class PostController {
 
     private final PostService postService;
+    private final CommentService commentService;
 
     @GetMapping("/new")
     public String createForm(Model model) {
@@ -46,5 +48,20 @@ public class PostController {
         model.addAttribute("post", post);
         model.addAttribute("commentRequest", new CommentCreateRequest());
         return "post/detail";
+    }
+
+    @PostMapping("/{postId}/comments")
+    public String createComment(@PathVariable Long postId,
+                                @Valid @ModelAttribute CommentCreateRequest commentCreateRequest,
+                                BindingResult bindingResult,
+                                //세션을 통해 현재 로그인한 사용자 정보
+                                @AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (bindingResult.hasErrors()) {
+            return "post/detail";
+        }
+
+        commentService.create(postId, commentCreateRequest, userDetails.getId());
+
+        return "redirect:/posts/"+postId;
     }
 }
