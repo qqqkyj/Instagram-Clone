@@ -455,6 +455,32 @@ public class BaseEntity {
 }
 ```
 
+# 📌 @EnableJpaAuditing이 제공하는 대표 기능
+
+| 기능 | 설명 |
+| --- | --- |
+| @CreatedDate | 엔티티 **처음 저장될 때** 시간 기록 |
+| @LastModifiedDate | 엔티티 **update 될 때** 시간 기록 |
+| @CreatedBy | 엔티티 생성한 사용자 기록 |
+| @LastModifiedBy | 엔티티 수정한 사용자 기록 |
+| AuditingEntityListener | 상태 변화 감지 리스너 |
+
+**정리하면:**
+
+👉 "**@EnableJpaAuditing** = 엔티티의 생성·수정 정보 '자동 기록 시스템'을 활성화하는 기능"
+
+→ 생성/수정 시간 자동 기록
+
+```java
+@SpringBootApplication
+**@EnableJpaAuditing// 해당 어노테이션을 작성하지 않으면 생성, 수정 시간이 null로 들어감** 
+public class InstagramApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(InstagramApplication.class, args);
+    }
+}
+```
+
 ## 📌 User Entity
 
 ```java
