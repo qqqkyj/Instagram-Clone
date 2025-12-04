@@ -17,7 +17,8 @@ public class HomeController {
 
     @GetMapping("/")
     public String home(Model model) {
-        List<PostResponse> postResponses = postService.getAllPosts();
+//        List<PostResponse> postResponses = postService.getAllPosts();
+        List<PostResponse> postResponses = postService.getAllPostsWithStats();
         model.addAttribute("posts", postResponses);
         return "home";
     }

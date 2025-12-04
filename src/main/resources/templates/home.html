@@ -44,6 +44,16 @@
                         <p class="card-text" th:text="${post.content}">게시물 내용</p>
                     </div>
 
+                    <!--좋아요 개수 표시-->
+                    <div class="mb-1">
+                        <span class="fw-bold">좋아요 <span th:text="${post.likeCount}"></span>개</span>
+                    </div>
+
+                    <!--댓글 개수 표시-->
+                    <div class="mb-1">
+                        <span class="fw-bold">댓글 <span th:text="${post.commentCount}"></span>개</span>
+                    </div>
+
                     <!-- 하단 정보 -->
                     <div class="card-footer bg-white">
                         <small class="text-muted" th:text="${#temporals.format(post.createdAt, 'yyyy년 MM월 dd일')}">
