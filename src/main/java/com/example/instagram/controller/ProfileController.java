@@ -4,6 +4,7 @@ import com.example.instagram.dto.request.ProfileUpdateRequest;
 import com.example.instagram.dto.response.UserResponse;
 import com.example.instagram.entity.User;
 import com.example.instagram.security.CustomUserDetails;
+import com.example.instagram.service.ProfileService;
 import com.example.instagram.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class ProfileController {
 
     private final UserService userService;
+    private final ProfileService profileService;
 
     @GetMapping("/edit")
     public String editForm(Model model, @AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -45,7 +47,7 @@ public class ProfileController {
             return "profile/edit";
         }
 
-        userService.updateProfile(userDetails.getId(), profileUpdateRequest, profileImg);
+        profileService.updateProfile(userDetails.getId(), profileUpdateRequest, profileImg);
 
         return "redirect:/users/" + userDetails.getUsername();
     }

@@ -21,11 +21,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class UserServiceImpl implements UserService{
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-//    private final PostService postService; //순환 참조 오류 발생
-//    private final FollowService followService; //순환 참조 오류 발생
-    private final FollowRepository followRepository;
-    private final PostRepository postRepository;
-    private final FileService fileService;
 
     @Override
     @Transactional
@@ -51,15 +46,6 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public ProfileResponse getProfile(String username) {
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new IllegalArgumentException("User not found"));
-        long postCount = postRepository.countByUserId(user.getId());
-        long followerCount = followRepository.countByFollowingId(user.getId());
-        long followingCount = followRepository.countByFollowerId(user.getId());
-        return ProfileResponse.from(user, postCount, followerCount, followingCount);
-    }
-
-    @Override
     public User findByUsername(String username) {
         return userRepository.findByUsername(username).orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
@@ -67,19 +53,5 @@ public class UserServiceImpl implements UserService{
     @Override
     public UserResponse getUserById(Long id) {
         return UserResponse.from(findById(id));
-    }
-
-    @Override
-    @Transactional
-    public void updateProfile(Long id, ProfileUpdateRequest profileUpdateRequest, MultipartFile profileImg) {
-        User user = findById(id);
-
-        //프로필 이미지 처리
-        String imgUrl = fileService.fileUpload(profileImg);
-        if (imgUrl != null) {
-            user.updateProfileImage(imgUrl);
-        }
-        user.updateProfile(profileUpdateRequest.getName(), profileUpdateRequest.getBio());
-        userRepository.save(user);
     }
 }
