@@ -24,7 +24,15 @@ public class FileServiceImpl implements FileService{
             = Arrays.asList("jpg", "jpeg", "png", "gif", "bmp");
 
     @Override
-    public String saveFile(MultipartFile file) {
+    public String fileUpload(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            return null;
+        }
+        String fileName = saveFile(file);
+        return "/" + uploadDir + "/" + fileName;
+    }
+
+    private String saveFile(MultipartFile file) {
         try{
             if(file == null || file.isEmpty()){
                 return null;

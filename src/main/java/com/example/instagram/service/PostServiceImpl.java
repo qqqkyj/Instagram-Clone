@@ -8,12 +8,10 @@ import com.example.instagram.repository.CommentRepository;
 import com.example.instagram.repository.LikeRepository;
 import com.example.instagram.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -26,21 +24,13 @@ public class PostServiceImpl implements PostService {
     private final CommentRepository commentRepository;
     private final FileService fileService;
 
-    //properties에 작성한 데이터 가져옴
-    @Value("${file.upload-dir}")
-    private String uploadDir;
-
     @Override
     @Transactional
     public PostResponse create(PostCreateRequest postCreateRequest, MultipartFile image, Long userId) {
         User user = userService.findById(userId);
 
-        //파일을 저장 => 경로
-        String imageUrl = null;
-        if(image != null || !image.isEmpty()) {
-            String fileName = fileService.saveFile(image);
-            imageUrl =  "/" + uploadDir + "/" + fileName;
-        }
+        //게시판 이미지 업로드
+        String imageUrl = fileService.fileUpload(image);
 
         Post post = Post.builder()
                 .content(postCreateRequest.getContent())
