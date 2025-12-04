@@ -2,6 +2,7 @@ package com.example.instagram.controller;
 
 import com.example.instagram.dto.request.ProfileUpdateRequest;
 import com.example.instagram.dto.response.UserResponse;
+import com.example.instagram.entity.User;
 import com.example.instagram.security.CustomUserDetails;
 import com.example.instagram.service.UserService;
 import jakarta.validation.Valid;
@@ -21,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class ProfileController {
 
     private final UserService userService;
-//    private final ProfileService profileService;
 
     @GetMapping("/edit")
     public String editForm(Model model, @AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -35,17 +35,19 @@ public class ProfileController {
         return "profile/edit";
     }
 
-//    @PostMapping("/edit")
-//    public String edit(@Valid @ModelAttribute ProfileUpdateRequest profileUpdateRequest,
-//                       @AuthenticationPrincipal CustomUserDetails userDetails,
-//                       BindingResult bindingResult,
-//                       Model model){
-//        if(bindingResult.hasErrors()){
-//            UserResponse currentUser = userService.getUserById(userDetails.getId());
-//            model.addAttribute("profileUpdateRequest", profileUpdateRequest);
-//            model.addAttribute("currentUser", currentUser);
-//            return "profile/edit";
-//        }
-//        return "redirect:/profile/edit";
-//    }
+    @PostMapping("/edit")
+    public String edit(@Valid @ModelAttribute ProfileUpdateRequest profileUpdateRequest,
+                       @AuthenticationPrincipal CustomUserDetails userDetails,
+                       BindingResult bindingResult,
+                       Model model){
+        if(bindingResult.hasErrors()){
+            UserResponse currentUser = userService.getUserById(userDetails.getId());
+            model.addAttribute("currentUser", currentUser);
+            return "profile/edit";
+        }
+
+        userService.updateProfile(userDetails.getId(), profileUpdateRequest);
+
+        return "redirect:/users/" + userDetails.getUsername();
+    }
 }
