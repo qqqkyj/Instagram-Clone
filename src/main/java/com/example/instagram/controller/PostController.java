@@ -1,6 +1,6 @@
 package com.example.instagram.controller;
 
-import com.example.instagram.dto.request.CommentCreateRequest;
+import com.example.instagram.dto.request.CommentRequest;
 import com.example.instagram.dto.request.PostCreateRequest;
 import com.example.instagram.dto.response.CommentResponse;
 import com.example.instagram.dto.response.PostResponse;
@@ -54,7 +54,7 @@ public class PostController {
         PostResponse post = postService.getPostById(id);
         List<CommentResponse> comments = commentService.getAllCommentsByPostId(id);
         model.addAttribute("post", post);
-        model.addAttribute("commentRequest", new CommentCreateRequest());
+        model.addAttribute("commentRequest", new CommentRequest());
         model.addAttribute("comments", comments);
         model.addAttribute("liked", likeService.isLiked(id,userDetails.getId()));
         model.addAttribute("likeCount", likeService.getLikeCount(id));
@@ -63,7 +63,7 @@ public class PostController {
 
     @PostMapping("/{postId}/comments")
     public String createComment(@PathVariable Long postId,
-                                @Valid @ModelAttribute("commentRequest") CommentCreateRequest commentCreateRequest,
+                                @Valid @ModelAttribute CommentRequest commentRequest,
                                 BindingResult bindingResult,
                                 //세션을 통해 현재 로그인한 사용자 정보
                                 @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -79,7 +79,7 @@ public class PostController {
             return "post/detail";
         }
 
-        commentService.create(postId, commentCreateRequest, userDetails.getId());
+        commentService.create(postId, commentRequest, userDetails.getId());
 
         return "redirect:/posts/"+postId;
     }

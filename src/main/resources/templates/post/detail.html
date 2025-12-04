@@ -28,7 +28,7 @@
                     <div sec:authorize="isAuthenticated()">
                         <form th:action="@{/posts/{id}/like(id=${post.id})}" method="post">
                             <button type="submit" class="btn btn-link text-decoration-none">
-                                <i th:class="${liked ? 'bi bi-heart-fill' : 'bi bi-heart'}"></i>
+<!--                                <i th:class="${liked ? 'bi bi-heart-fill' : 'bi bi-heart'}"></i>-->
                             </button>
                         </form>
                         <span><span th:text="${likeCount}"></span>명이 좋아합니다.</span>
@@ -41,7 +41,7 @@
                     </p>
                 </div>
 
-                <!-- 삭제 버튼 (본인 게시물인 경우만) -->
+                 삭제 버튼 (본인 게시물인 경우만)
                 <div class="card-footer" th:if="${isOwner}">
                     <form th:action="@{'/posts/' + ${post.id} + '/delete'}" method="post"
                           onsubmit="return confirm('정말 삭제하시겠습니까?');">
