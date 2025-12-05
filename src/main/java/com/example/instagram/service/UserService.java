@@ -4,6 +4,8 @@ import com.example.instagram.dto.request.SignUpRequest;
 import com.example.instagram.dto.response.UserResponse;
 import com.example.instagram.entity.User;
 
+import java.util.List;
+
 public interface UserService {
     User register(SignUpRequest signUpRequest);
 
@@ -14,4 +16,7 @@ public interface UserService {
     User findByUsername(String username);
 
     UserResponse getUserById(Long id);
+
+    //사용자 검색
+    List<UserResponse> searchUsers(String keyword);
 }

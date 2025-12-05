@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+    <title>탐색</title>
+    <style>
+        .explore-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+        }
+        .explore-item {
+            position: relative;
+            padding-bottom: 100%;
+        }
+        .explore-item img,
+        .explore-item .no-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .explore-item .no-image {
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .explore-item .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .explore-item:hover .overlay {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <h4 class="mb-4">탐색</h4>
+
+    <!-- 게시물 그리드 -->
+    <div id="posts-container" class="explore-grid"></div>
+
+    <!-- 로딩 표시 -->
+    <div id="loading" class="text-center py-4" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <!-- 더 이상 게시물 없음 -->
+    <div id="no-more" class="text-center py-4 text-muted" style="display: none;">
+        더 이상 게시물이 없습니다.
+    </div>
+
+    <!-- 빈 상태 -->
+    <div id="empty" class="text-center py-5" style="display: none;">
+        <i class="bi bi-camera fs-1 text-muted"></i>
+        <h5 class="mt-3">게시물이 없습니다</h5>
+    </div>
+
+    <!-- 스크롤 감지용 -->
+    <div id="scroll-trigger"></div>
+
+    <script>
+        (function() {
+            let currentPage = 0;
+            let isLoading = false;
+            let isLastPage = false;
+
+            const container = document.getElementById('posts-container');
+            const loading = document.getElementById('loading');
+            const noMore = document.getElementById('no-more');
+            const empty = document.getElementById('empty');
+            const scrollTrigger = document.getElementById('scroll-trigger');
+
+            function createPostHTML(post) {
+                return `
+                <a href="/posts/${post.id}" class="explore-item">
+                    ${post.imageUrl
+                    ? `<img src="${post.imageUrl}" alt="게시물">`
+                    : `<div class="no-image"><p class="text-muted small text-center p-2 m-0">${(post.content || '').substring(0, 50)}</p></div>`
+                }
+                    <div class="overlay text-white">
+                        <span class="me-3"><i class="bi bi-heart-fill"></i> ${post.likeCount}</span>
+                        <span><i class="bi bi-chat-fill"></i> ${post.commentCount}</span>
+                    </div>
+                </a>
+            `;
+            }
+
+            async function loadPosts() {
+                if (isLoading || isLastPage) return;
+
+                isLoading = true;
+                loading.style.display = 'block';
+
+                try {
+                    const response = await fetch(`/api/explore?page=${currentPage}&size=12`);
+                    const data = await response.json();
+
+                    if (data.content.length === 0 && currentPage === 0) {
+                        empty.style.display = 'block';
+                    } else {
+                        data.content.forEach(post => {
+                            container.insertAdjacentHTML('beforeend', createPostHTML(post));
+                        });
+                    }
+
+                    isLastPage = data.last;
+                    if (isLastPage && data.content.length > 0) {
+                        noMore.style.display = 'block';
+                    }
+
+                    currentPage++;
+                } catch (error) {
+                    console.error('Failed to load posts:', error);
+                } finally {
+                    isLoading = false;
+                    loading.style.display = 'none';
+                }
+            }
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        loadPosts();
+                    }
+                });
+            }, { rootMargin: '100px' });
+
+            observer.observe(scrollTrigger);
+            loadPosts();
+        })();
+    </script>
+</div>
+</body>
+</html>
