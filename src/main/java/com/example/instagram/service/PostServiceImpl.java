@@ -4,6 +4,8 @@ import com.example.instagram.dto.request.PostCreateRequest;
 import com.example.instagram.dto.response.PostResponse;
 import com.example.instagram.entity.Post;
 import com.example.instagram.entity.User;
+import com.example.instagram.exception.BusinessException;
+import com.example.instagram.exception.ErrorCode;
 import com.example.instagram.repository.CommentRepository;
 import com.example.instagram.repository.FollowRepository;
 import com.example.instagram.repository.LikeRepository;
@@ -48,7 +50,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public Post findById(Long id){
-        Post post = postRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("post not found"));
+        Post post = postRepository.findById(id).orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
         return post;
     }
 
