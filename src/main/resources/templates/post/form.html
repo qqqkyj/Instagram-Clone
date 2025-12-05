@@ -11,10 +11,10 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="mb-0">새 게시물 작성</h5>
+                    <title th:text="${postCreateRequest.id == null} ? '새 게시물' : '게시물 수정'">게시물</title>
                 </div>
                 <div class="card-body">
-                    <form enctype="multipart/form-data" th:action="@{/posts}" th:object="${postCreateRequest}" method="post">
+                    <form enctype="multipart/form-data" th:action="${postCreateRequest.id == null} ? '/posts' : @{/posts/{id}/edit(id=${postCreateRequest.id})}" th:object="${postCreateRequest}" method="post">
                         <div class="mb-3">
                             <label for="image" class="form-label">이미지</label>
                             <input type="file" id="image" name="image" class="form-control" accept="image/*">
@@ -32,7 +32,8 @@
                         </div>
                         <div class="d-flex justify-content-between">
                             <a href="/" class="btn btn-outline-secondary">취소</a>
-                            <button type="submit" class="btn btn-primary">게시하기</button>
+                            <button type="submit" class="btn btn-primary"
+                                    th:text="${postCreateRequest.id == null} ? '게시하기' : '수정하기'">제출</button>
                         </div>
                     </form>
                 </div>

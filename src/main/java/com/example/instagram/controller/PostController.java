@@ -55,11 +55,14 @@ public class PostController {
                          @AuthenticationPrincipal CustomUserDetails userDetails) {
         PostResponse post = postService.getPostById(id);
         List<CommentResponse> comments = commentService.getAllCommentsByPostId(id);
+        boolean isOwner = userDetails.getUsername().equals(post.getUsername());
+
         model.addAttribute("post", post);
         model.addAttribute("commentRequest", new CommentRequest());
         model.addAttribute("comments", comments);
         model.addAttribute("liked", likeService.isLiked(id,userDetails.getId()));
         model.addAttribute("likeCount", likeService.getLikeCount(id));
+        model.addAttribute("isOwner", isOwner);
         return "post/detail";
     }
 
@@ -94,5 +97,27 @@ public class PostController {
                              @AuthenticationPrincipal CustomUserDetails userDetails) {
         likeService.toggleLike(id, userDetails.getId());
         return "redirect:/posts/"+id;
+    }
+
+    //게시물 수정 폼 생성
+    @GetMapping("/{id}/edit")
+    public String edit(@PathVariable Long id, Model model) {
+        PostResponse post = postService.getPostById(id);
+        model.addAttribute("postCreateRequest", new PostCreateRequest(post.getId(), post.getContent(), post.getImageUrl()));
+        return "post/form";
+    }
+
+    //실게 게시물 수정
+    @PostMapping("/{id}/edit")
+    public String update(@Valid @ModelAttribute PostCreateRequest postCreateRequest,
+                         BindingResult bindingResult,
+                         @RequestParam(value = "image", required = false) MultipartFile image,
+                         Model model) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("postCreateRequest", postCreateRequest);
+            return "post/form";
+        }
+        postService.update(postCreateRequest, image);
+        return "redirect:/posts/"+postCreateRequest.getId();
     }
 }

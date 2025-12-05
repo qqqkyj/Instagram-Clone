@@ -128,4 +128,18 @@ public class PostServiceImpl implements PostService {
                 .toList();
         return new SliceImpl<>(content, pageable, posts.hasNext());
     }
+
+    @Override
+    @Transactional
+    public void update(PostCreateRequest postCreateRequest, MultipartFile image) {
+        Post post = findById(postCreateRequest.getId());
+
+        //게시판 이미지 업로드
+        String imageUrl = fileService.fileUpload(image);
+        if(imageUrl != null){post.setImageUrl(imageUrl);}
+
+        post.setContent(postCreateRequest.getContent());
+
+        postRepository.save(post);
+    }
 }

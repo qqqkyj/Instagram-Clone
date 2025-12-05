@@ -26,4 +26,7 @@ public interface PostService {
 
     //검색
     Slice<PostResponse> searchPosts(String keyword, Pageable pageable);
+
+    //게시물 수정
+    void update(PostCreateRequest postCreateRequest, MultipartFile image);
 }

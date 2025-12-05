@@ -45,8 +45,15 @@
                     </p>
                 </div>
 
-                <!--삭제 버튼 (본인 게시물인 경우만)-->
-                <div class="card-footer" th:if="${isOwner}">
+
+                <!--수정 및 삭제 (본인 게시물인 경우만)-->
+                <div class="card-footer d-flex gap-2" th:if="${isOwner}">
+                    <!-- 수정 버튼 -->
+                    <form th:action="@{'/posts/' + ${post.id} + '/edit'}"
+                          onsubmit="return confirm('정말 수정하시겠습니까?');">
+                        <button type="submit" class="btn btn-outline-warning btn-sm">수정</button>
+                    </form>
+                    <!-- 삭제 버튼 -->
                     <form th:action="@{'/posts/' + ${post.id} + '/delete'}" method="post"
                           onsubmit="return confirm('정말 삭제하시겠습니까?');">
                         <button type="submit" class="btn btn-outline-danger btn-sm">삭제</button>

@@ -28,4 +28,12 @@ public class Post extends BaseEntity {
         this.user = user;
         this.imageUrl = imageUrl;
     }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
 }
