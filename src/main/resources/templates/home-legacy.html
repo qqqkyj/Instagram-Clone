@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+    <title>홈</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <!-- 로그인하지 않은 경우 -->
+    <div sec:authorize="!isAuthenticated()" class="text-center">
+        <h1>Instagram Clone</h1>
+        <p class="lead">친구들의 사진과 동영상을 보려면 가입하세요.</p>
+        <a href="/auth/signup" class="btn btn-primary btn-lg">회원가입</a>
+    </div>
+
+    <!-- 로그인한 경우 -->
+    <div sec:authorize="isAuthenticated()">
+        <div class="row">
+            <div class="col-md-8">
+                <!-- 게시물이 없는 경우 -->
+                <div th:if="${#lists.isEmpty(posts)}" class="card">
+                    <div class="card-body text-center text-muted">
+                        <p>아직 게시물이 없습니다.</p>
+                        <a href="/posts/new" class="btn btn-primary">첫 게시물 작성하기</a>
+                    </div>
+                </div>
+
+                <!-- 게시물 목록 -->
+                <div th:each="post : ${posts}" class="card mb-3">
+                    <!-- 작성자 정보 -->
+                    <div class="card-header d-flex align-items-center bg-white">
+                                                <img th:src="${post.profileImageUrl != null ? post.profileImageUrl : '/uploads/default-profile.png'}"
+                                                     class="rounded-circle me-2" width="32" height="32"
+                                                     alt="프로필 이미지">
+                        <a th:href="@{'/users/' + ${post.username}}" class="fw-bold text-decoration-none text-dark">
+                            <span th:text="${post.username}">username</span>
+                        </a>
+                    </div>
+
+                    <!-- 게시물 내용 -->
+                    <!-- 이미지 -->
+                    <div th:if="${post.imageUrl}">
+                        <img th:src="${post.imageUrl}" alt="" class="img-fluid" style="height: 500px">
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text" th:text="${post.content}">게시물 내용</p>
+                    </div>
+
+                    <!--좋아요 개수 표시-->
+                    <div class="mb-1">
+                        <span class="fw-bold">좋아요 <span th:text="${post.likeCount}"></span>개</span>
+                    </div>
+
+                    <!--댓글 개수 표시-->
+                    <div class="mb-1">
+                        <span class="fw-bold">댓글 <span th:text="${post.commentCount}"></span>개</span>
+                    </div>
+
+                    <!-- 하단 정보 -->
+                    <div class="card-footer bg-white">
+                        <small class="text-muted" th:text="${#temporals.format(post.createdAt, 'yyyy년 MM월 dd일')}">
+                            2024년 1월 1일
+                        </small>
+                        <a th:href="@{'/posts/' + ${post.id}}" class="btn btn-link btn-sm float-end">
+                            자세히 보기
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 사이드바 -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h6>환영합니다!</h6>
+                        <p class="text-muted mb-0">
+                            <span sec:authentication="name"></span>님
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

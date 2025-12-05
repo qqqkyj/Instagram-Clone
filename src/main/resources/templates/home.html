@@ -1,88 +1,189 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       layout:decorate="~{layout/layout}">
 <head>
-    <title>홈</title>
+    <title>Instagram</title>
 </head>
 <body>
 <div layout:fragment="content">
-    <!-- 로그인하지 않은 경우 -->
-    <div sec:authorize="!isAuthenticated()" class="text-center">
-        <h1>Instagram Clone</h1>
-        <p class="lead">친구들의 사진과 동영상을 보려면 가입하세요.</p>
-        <a href="/auth/signup" class="btn btn-primary btn-lg">회원가입</a>
+    <!-- 로그인 안내 (비로그인 시) -->
+    <div sec:authorize="!isAuthenticated()" class="text-center py-5">
+        <h4>Instagram에 오신 것을 환영합니다</h4>
+        <p class="text-muted">로그인하여 친구들의 게시물을 확인하세요.</p>
+        <a href="/auth/login" class="btn btn-primary">로그인</a>
+        <a href="/auth/signup" class="btn btn-outline-primary">회원가입</a>
     </div>
 
-    <!-- 로그인한 경우 -->
+    <!-- 피드 (로그인 시) -->
     <div sec:authorize="isAuthenticated()">
-        <div class="row">
-            <div class="col-md-8">
-                <!-- 게시물이 없는 경우 -->
-                <div th:if="${#lists.isEmpty(posts)}" class="card">
-                    <div class="card-body text-center text-muted">
-                        <p>아직 게시물이 없습니다.</p>
-                        <a href="/posts/new" class="btn btn-primary">첫 게시물 작성하기</a>
-                    </div>
-                </div>
+        <!-- 게시물 컨테이너 -->
+        <div id="posts-container"></div>
 
-                <!-- 게시물 목록 -->
-                <div th:each="post : ${posts}" class="card mb-3">
-                    <!-- 작성자 정보 -->
-                    <div class="card-header d-flex align-items-center bg-white">
-                                                <img th:src="${post.profileImageUrl != null ? post.profileImageUrl : '/uploads/default-profile.png'}"
-                                                     class="rounded-circle me-2" width="32" height="32"
-                                                     alt="프로필 이미지">
-                        <a th:href="@{'/users/' + ${post.username}}" class="fw-bold text-decoration-none text-dark">
-                            <span th:text="${post.username}">username</span>
-                        </a>
-                    </div>
-
-                    <!-- 게시물 내용 -->
-                    <!-- 이미지 -->
-                    <div th:if="${post.imageUrl}">
-                        <img th:src="${post.imageUrl}" alt="" class="img-fluid" style="height: 500px">
-                    </div>
-                    <div class="card-body">
-                        <p class="card-text" th:text="${post.content}">게시물 내용</p>
-                    </div>
-
-                    <!--좋아요 개수 표시-->
-                    <div class="mb-1">
-                        <span class="fw-bold">좋아요 <span th:text="${post.likeCount}"></span>개</span>
-                    </div>
-
-                    <!--댓글 개수 표시-->
-                    <div class="mb-1">
-                        <span class="fw-bold">댓글 <span th:text="${post.commentCount}"></span>개</span>
-                    </div>
-
-                    <!-- 하단 정보 -->
-                    <div class="card-footer bg-white">
-                        <small class="text-muted" th:text="${#temporals.format(post.createdAt, 'yyyy년 MM월 dd일')}">
-                            2024년 1월 1일
-                        </small>
-                        <a th:href="@{'/posts/' + ${post.id}}" class="btn btn-link btn-sm float-end">
-                            자세히 보기
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 사이드바 -->
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h6>환영합니다!</h6>
-                        <p class="text-muted mb-0">
-                            <span sec:authentication="name"></span>님
-                        </p>
-                    </div>
-                </div>
+        <!-- 로딩 표시 -->
+        <div id="loading" class="text-center py-4" style="display: none;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
             </div>
         </div>
+
+        <!-- 더 이상 게시물 없음 -->
+        <div id="no-more" class="text-center py-4 text-muted" style="display: none;">
+            더 이상 게시물이 없습니다.
+        </div>
+
+        <!-- 빈 피드 안내 -->
+        <div id="empty-feed" class="text-center py-5" style="display: none;">
+            <i class="bi bi-people fs-1 text-muted"></i>
+            <h5 class="mt-3">피드가 비어있습니다</h5>
+            <p class="text-muted">다른 사용자를 팔로우하면 게시물이 여기에 표시됩니다.</p>
+            <a href="/explore" class="btn btn-outline-primary">탐색하기</a>
+        </div>
+
+        <!-- 스크롤 감지용 요소 -->
+        <div id="scroll-trigger"></div>
     </div>
+
+    <script>
+        (function() {
+            let currentPage = 0;
+            let isLoading = false;
+            let isLastPage = false;
+
+            const container = document.getElementById('posts-container');
+            const loading = document.getElementById('loading');
+            const noMore = document.getElementById('no-more');
+            const emptyFeed = document.getElementById('empty-feed');
+            const scrollTrigger = document.getElementById('scroll-trigger');
+
+            // 게시물 HTML 생성
+            function createPostHTML(post) {
+                return `
+                <div class="card mb-3">
+                    <div class="card-header bg-white d-flex align-items-center">
+                        <a href="/users/${post.username}" class="text-decoration-none text-dark d-flex align-items-center">
+                            <img src="${post.profileImageUrl || '/images/default-profile.png'}"
+                                 class="rounded-circle me-2" width="32" height="32"
+                                 style="object-fit: cover;" alt="프로필">
+                            <strong>${post.username}</strong>
+                        </a>
+                    </div>
+                    ${post.imageUrl ? `
+                        <img src="${post.imageUrl}" class="card-img-top" alt="게시물 이미지">
+                    ` : ''}
+                    <div class="card-body">
+                        <div class="mb-2">
+                            <button class="btn btn-link text-dark p-0 me-2" onclick="toggleLike(${post.id}, this)">
+                                <i class="bi bi-heart fs-5"></i>
+                            </button>
+                            <a href="/posts/${post.id}" class="btn btn-link text-dark p-0">
+                                <i class="bi bi-chat fs-5"></i>
+                            </a>
+                        </div>
+                        <div class="fw-bold mb-1">좋아요 ${post.likeCount}개</div>
+                        <div>
+                            <a href="/users/${post.username}" class="fw-bold text-dark text-decoration-none">${post.username}</a>
+                            <span>${post.content || ''}</span>
+                        </div>
+                        ${post.commentCount > 0 ? `
+                            <a href="/posts/${post.id}" class="text-muted text-decoration-none">
+                                댓글 ${post.commentCount}개 모두 보기
+                            </a>
+                        ` : ''}
+                        <div class="text-muted small mt-1">${formatDate(post.createdAt)}</div>
+                    </div>
+                </div>
+            `;
+            }
+
+            // 날짜 포맷
+            function formatDate(dateString) {
+                const date = new Date(dateString);
+                const now = new Date();
+                const diff = now - date;
+                const minutes = Math.floor(diff / 60000);
+                const hours = Math.floor(diff / 3600000);
+                const days = Math.floor(diff / 86400000);
+
+                if (minutes < 1) return '방금 전';
+                if (minutes < 60) return `${minutes}분 전`;
+                if (hours < 24) return `${hours}시간 전`;
+                if (days < 7) return `${days}일 전`;
+                return date.toLocaleDateString('ko-KR');
+            }
+
+            // 게시물 로딩
+            async function loadPosts() {
+                if (isLoading || isLastPage) return;
+
+                isLoading = true;
+                loading.style.display = 'block';
+
+                try {
+                    const response = await fetch(`/api/feed?page=${currentPage}&size=5`);
+                    const data = await response.json();
+
+                    if (data.content.length === 0 && currentPage === 0) {
+                        emptyFeed.style.display = 'block';
+                    } else {
+                        data.content.forEach(post => {
+                            container.insertAdjacentHTML('beforeend', createPostHTML(post));
+                        });
+                    }
+
+                    isLastPage = data.last;
+                    if (isLastPage && data.content.length > 0) {
+                        noMore.style.display = 'block';
+                    }
+
+                    currentPage++;
+                } catch (error) {
+                    console.error('Failed to load posts:', error);
+                } finally {
+                    isLoading = false;
+                    loading.style.display = 'none';
+                }
+            }
+
+            // Intersection Observer 설정
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        loadPosts();
+                    }
+                });
+            }, {
+                rootMargin: '100px'
+            });
+
+            observer.observe(scrollTrigger);
+
+            // 초기 로딩
+            loadPosts();
+        })();
+
+        // 좋아요 토글 (전역 함수)
+        async function toggleLike(postId, button) {
+            try {
+                const response = await fetch(`/posts/${postId}/like`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const icon = button.querySelector('i');
+                    icon.classList.toggle('bi-heart');
+                    icon.classList.toggle('bi-heart-fill');
+                    icon.classList.toggle('text-danger');
+                }
+            } catch (error) {
+                console.error('Failed to toggle like:', error);
+            }
+        }
+    </script>
 </div>
 </body>
 </html>
